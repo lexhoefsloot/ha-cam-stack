@@ -1,0 +1,18 @@
+api:
+  listen: ":1984"        # web UI + WebRTC signalling
+rtsp:
+  listen: ":8554"        # RTSP server (optional)
+webrtc:
+  listen: ":8555/tcp"    # WebRTC fallback over TCP (helps over Tailscale NAT)
+
+streams:
+  # Video-only (MJPEG passthrough). Fast and reliable.
+  dfr1154:
+    - http://${CAM_IP}:${CAM_STREAM_PORT}/stream
+
+  # Audio-only (camera WAV → AAC ADTS via stdout pipe).
+  dfr1154_audio:
+    - exec:ffmpeg -hide_banner -v error -i http://${CAM_IP}:${CAM_AUDIO_PORT}/audio.wav -c:a aac -b:a 64k -ar 16000 -ac 1 -f adts -
+
+log:
+  level: ${LOG_LEVEL}

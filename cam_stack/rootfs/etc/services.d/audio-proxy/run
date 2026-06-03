@@ -1,0 +1,15 @@
+#!/usr/bin/with-contenv bashio
+CAM_IP="$(bashio::config 'cam_ip')"
+CAM_AUDIO_PORT="$(bashio::config 'cam_audio_port')"
+GAIN="$(bashio::config 'audio_gain_db')"
+WD_STALL="$(bashio::config 'watchdog_stall_s')"
+WD_GRACE="$(bashio::config 'watchdog_startup_grace_s')"
+
+export UPSTREAM="http://${CAM_IP}:${CAM_AUDIO_PORT}/audio.wav"
+export PORT=8090
+export AUDIO_GAIN_DB="${GAIN}"
+export WATCHDOG_STALL_S="${WD_STALL}"
+export WATCHDOG_STARTUP_GRACE_S="${WD_GRACE}"
+
+bashio::log.info "starting audio-proxy (UPSTREAM=${UPSTREAM} gain=${GAIN}dB wd_stall=${WD_STALL}s)"
+exec python3 /opt/proxy.py

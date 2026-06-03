@@ -1,0 +1,3 @@
+#!/usr/bin/with-contenv bashio
+bashio::log.info "starting go2rtc"
+exec go2rtc -config /etc/go2rtc.yaml

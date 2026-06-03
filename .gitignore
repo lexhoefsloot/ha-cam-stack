@@ -1,0 +1,15 @@
+# Local-only artifacts
+*.swp
+*.swo
+.DS_Store
+
+# Don't commit secrets even if accidentally dropped here
+secrets.yaml
+*.key
+*.pem
+
+# Local build artifacts (HA builds containers via the supervisor; no local
+# .tar / .img / image.json should end up in the repo)
+*.tar
+*.img
+image.json
