@@ -12,7 +12,7 @@ Home Assistant **custom add-on repository** voor de camper-stack.
 
 1. Push deze repo naar GitHub (privé mag).
 2. In Home Assistant → **Settings → Add-ons → ⋮ (rechtsboven) → Repositories**.
-3. Plak de Git-URL (bv. `https://github.com/<jij>/ha-cam-stack`) en klik **Add**.
+3. Plak de Git-URL `https://github.com/lexhoefsloot/ha-cam-stack` en klik **Add**.
 4. De add-on(s) verschijnen onderaan de add-on store. Klik **Install** op *Camera Stack*.
 5. Onder **Configuration** kies je `cam_ip`, gain, watchdog-thresholds, etc.
 6. **Start** → check de logs.
