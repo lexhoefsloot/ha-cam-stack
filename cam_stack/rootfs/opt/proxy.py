@@ -75,7 +75,7 @@ class Broadcaster:
         self.decoder: asyncio.subprocess.Process | None = None
         self.subscribers: set[asyncio.Queue[bytes]] = set()
         self.feeder_task: asyncio.Task | None = None
-        self.stderr_task: asyncio.Task | None = None
+        self.pcm_task: asyncio.Task | None = None
         self.runner_task: asyncio.Task | None = None
         self.watchdog_task: asyncio.Task | None = None
         self.last_spawn_ts: float = 0.0
@@ -85,17 +85,60 @@ class Broadcaster:
         self.watchdog_task = asyncio.create_task(self._watchdog())
 
     async def _run_forever(self):
+        # Exponential backoff, capped. Reset to 1 after a run stays healthy long
+        # enough so a brief AP blip doesn't permanently slow reconnection.
         backoff = 1
+        HEALTHY_RUN_S = 60
         while True:
+            run_start = time.time()
             try:
                 await self._spawn_ffmpeg()
                 await self.proc.wait()
             except Exception as e:
                 log.warning("ffmpeg crashed: %s", e)
-            self.proc = None
+            finally:
+                # Always tear the WHOLE pipeline down before respawning. Without
+                # this, every restart (e.g. camera offline) orphaned the decoder
+                # ffmpeg and its pcm reader task → unbounded process/memory leak.
+                await self._teardown()
+            if time.time() - run_start >= HEALTHY_RUN_S:
+                backoff = 1
             log.info("ffmpeg exited; restart in %ds", backoff)
             await asyncio.sleep(backoff)
             backoff = min(backoff * 2, 30)
+
+    async def _teardown(self):
+        """Cancel feeder/pcm tasks, EOF the decoder, kill + REAP both ffmpegs.
+        Idempotent and exception-safe — runs on every restart cycle."""
+        for t in (self.feeder_task, self.pcm_task):
+            if t is not None and not t.done():
+                t.cancel()
+                try:
+                    await t
+                except (asyncio.CancelledError, Exception):
+                    pass
+        self.feeder_task = None
+        self.pcm_task = None
+        # Kill the decoder first (closing its stdin gives it EOF), then primary.
+        for p in (self.decoder, self.proc):
+            if p is None:
+                continue
+            try:
+                if p.stdin is not None and not p.stdin.is_closing():
+                    p.stdin.close()
+            except Exception:
+                pass
+            if p.returncode is None:
+                try:
+                    os.killpg(os.getpgid(p.pid), signal.SIGKILL)
+                except (ProcessLookupError, PermissionError):
+                    pass
+            try:
+                await p.wait()          # reap — no zombies / leaked transports
+            except Exception:
+                pass
+        self.proc = None
+        self.decoder = None
 
     async def _spawn_ffmpeg(self):
         log.info("starting ffmpeg → %s", self.upstream)

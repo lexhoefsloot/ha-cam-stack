@@ -1,5 +1,5 @@
 name: "Camera Stack (DFR1154)"
-version: "0.1.0"
+version: "0.1.1"
 slug: cam_stack
 description: "nginx viewer + Python audio-proxy + go2rtc voor de DFR1154 ESP32-S3 camera"
 url: "https://github.com/lexhoefsloot/ha-cam-stack"
