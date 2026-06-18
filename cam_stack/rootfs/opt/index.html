@@ -8,6 +8,8 @@
     body { background:#111; color:#eee; font-family:-apple-system,sans-serif;
            text-align:center; margin:0; padding:1rem; }
     img, audio { max-width:100%; border-radius:8px; }
+    /* DFR1154 sensor is hmirror=1 in firmware → flip the video back to a true image */
+    #video { transform: scaleX(-1); }
     .row { display:flex; justify-content:center; gap:.5rem;
            margin:.75rem 0; flex-wrap:wrap; }
     button { background:#222; color:#eee; border:1px solid #555;
