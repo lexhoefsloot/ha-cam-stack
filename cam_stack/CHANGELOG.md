@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.3
+
+* Continuous recorder: the camera video (MJPEG stream copy from the local go2rtc
+  restream, no transcoding) is written in 5-minute `.mkv` segments to
+  `/share/camrec/`, kept for `record_hours` (default 24 h, ~45 GB). Oldest
+  segments are also dropped when `/share` falls below `record_min_free_gb`.
+
 ## 0.1.1
 
 * Fix memory/process leak in the audio-proxy: every ffmpeg restart (e.g. while

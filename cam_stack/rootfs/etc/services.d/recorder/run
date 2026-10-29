@@ -1,0 +1,25 @@
+#!/usr/bin/with-contenv bashio
+# Continuous recording of the DFR1154 video (MJPEG, stream copy — no transcoding,
+# ~0.5 MB/s ≈ 45 GB/day) into 5-minute segments under /share/camrec.
+# Pulled from the local go2rtc RTSP restream, so the camera keeps a single client.
+if ! bashio::config.true 'record_enabled'; then
+    bashio::log.info "recorder disabled (record_enabled=false)"
+    exec sleep infinity
+fi
+
+DIR=/share/camrec
+mkdir -p "${DIR}"
+sleep 10   # let go2rtc come up
+
+bashio::log.info "recorder: writing 5-min segments to ${DIR}"
+while true; do
+    ffmpeg -hide_banner -v error -nostdin \
+        -rtsp_transport tcp -timeout 15000000 \
+        -i rtsp://127.0.0.1:8554/dfr1154 \
+        -map 0:v -c copy \
+        -f segment -segment_time 300 -segment_atclocktime 1 \
+        -reset_timestamps 1 -strftime 1 \
+        "${DIR}/%Y-%m-%d_%H-%M-%S.mkv"
+    bashio::log.warning "recorder: ffmpeg exited ($?), restarting in 10s"
+    sleep 10
+done
