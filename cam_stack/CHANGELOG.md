@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.5
+
+* Fix recorder-cleanup restart loop (non-empty legacy dir `rmdir` under `set -e`).
+
 ## 0.1.4
 
 * Recorder now writes **H.264 MP4** (5-min segments) to `/media/camrec/`, so the

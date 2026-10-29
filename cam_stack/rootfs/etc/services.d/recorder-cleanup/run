@@ -12,7 +12,7 @@ while true; do
     find "${DIR}" -type f -name '*.mp4' -mmin +$((HOURS * 60)) -delete
     if [ -d "${LEGACY}" ]; then
         find "${LEGACY}" -type f -name '*.mkv' -mmin +$((HOURS * 60)) -delete
-        rmdir "${LEGACY}" 2>/dev/null
+        rmdir "${LEGACY}" 2>/dev/null || true   # bashio runs with set -e
     fi
     while [ "$(df -Pk /media | awk 'NR==2 {print int($4 / 1048576)}')" -lt "${MIN_FREE_GB}" ]; do
         oldest="$(ls -1 "${LEGACY}"/*.mkv "${DIR}"/*.mp4 2>/dev/null | head -n 1)"
