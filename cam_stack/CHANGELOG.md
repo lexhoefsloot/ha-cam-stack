@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.4
+
+* Recorder now writes **H.264 MP4** (5-min segments) to `/media/camrec/`, so the
+  recordings show up in HA's Media browser (My media → camrec) and play on
+  iPhone/Safari. Encoded on the Pi 4 hardware encoder (`/dev/video11`, ~5% CPU),
+  with a libx264 fallback. ~1.2 Mbit/s ≈ 13 GB/day instead of ~45 GB.
+  New options `record_bitrate_kbps` (1200) and `record_fps` (20).
+* Old MJPEG `.mkv` segments in `/share/camrec/` are aged out by the cleanup.
+
 ## 0.1.3
 
 * Continuous recorder: the camera video (MJPEG stream copy from the local go2rtc

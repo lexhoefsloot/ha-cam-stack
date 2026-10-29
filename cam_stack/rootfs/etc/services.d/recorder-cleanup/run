@@ -1,16 +1,21 @@
 #!/usr/bin/with-contenv bashio
 # Rolling buffer: delete recordings older than record_hours, and the oldest ones
-# whenever /share drops below record_min_free_gb.
-DIR=/share/camrec
+# whenever /media drops below record_min_free_gb.
+DIR=/media/camrec
+LEGACY=/share/camrec   # 0.1.3 wrote MJPEG .mkv here; aged out the same way
 HOURS="$(bashio::config 'record_hours')"
 MIN_FREE_GB="$(bashio::config 'record_min_free_gb')"
 mkdir -p "${DIR}"
 bashio::log.info "recorder-cleanup: keep ${HOURS}h, min free ${MIN_FREE_GB} GB"
 
 while true; do
-    find "${DIR}" -type f -name '*.mkv' -mmin +$((HOURS * 60)) -delete
-    while [ "$(df -Pk /share | awk 'NR==2 {print int($4 / 1048576)}')" -lt "${MIN_FREE_GB}" ]; do
-        oldest="$(ls -1 "${DIR}"/*.mkv 2>/dev/null | head -n 1)"
+    find "${DIR}" -type f -name '*.mp4' -mmin +$((HOURS * 60)) -delete
+    if [ -d "${LEGACY}" ]; then
+        find "${LEGACY}" -type f -name '*.mkv' -mmin +$((HOURS * 60)) -delete
+        rmdir "${LEGACY}" 2>/dev/null
+    fi
+    while [ "$(df -Pk /media | awk 'NR==2 {print int($4 / 1048576)}')" -lt "${MIN_FREE_GB}" ]; do
+        oldest="$(ls -1 "${LEGACY}"/*.mkv "${DIR}"/*.mp4 2>/dev/null | head -n 1)"
         [ -n "${oldest}" ] || break
         bashio::log.warning "recorder-cleanup: low disk, deleting ${oldest}"
         rm -f "${oldest}"

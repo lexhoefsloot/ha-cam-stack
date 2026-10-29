@@ -1,5 +1,5 @@
 name: "Camera Stack (DFR1154)"
-version: "0.1.3"
+version: "0.1.4"
 slug: cam_stack
 description: "nginx viewer + Python audio-proxy + go2rtc + 24h recorder voor de DFR1154 ESP32-S3 camera"
 url: "https://github.com/lexhoefsloot/ha-cam-stack"
@@ -30,6 +30,8 @@ options:
   record_enabled: true
   record_hours: 24
   record_min_free_gb: 20
+  record_bitrate_kbps: 1200
+  record_fps: 20
 schema:
   cam_ip: "match(^[0-9.]+$)"
   cam_audio_port: "port"
@@ -42,5 +44,10 @@ schema:
   record_enabled: "bool"
   record_hours: "int(1,168)"
   record_min_free_gb: "int(5,400)"
+  record_bitrate_kbps: "int(200,8000)"
+  record_fps: "int(1,30)"
 map:
   - "share:rw"
+  - "media:rw"
+devices:
+  - /dev/video11
