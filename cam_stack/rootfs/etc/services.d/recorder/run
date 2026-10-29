@@ -6,7 +6,9 @@
 #
 # Two stages: (1) decode MJPEG → H.264 on the Pi 4's hardware encoder (/dev/video11,
 # ~5% of one core; libx264 fallback elsewhere) into an MPEG-TS pipe; (2) stream-copy
-# that into MP4 segments. The split is needed because h264_v4l2m2m emits SPS/PPS only
+# that into MP4 segments. Feed the encoder NV12: a plain yuvj420p→yuv420p relabel
+# hands it the MJPEG decoder's buffers as-is and every frame comes out as stripes.
+# The split is needed because h264_v4l2m2m emits SPS/PPS only
 # once, so a single-process segmenter writes undecodable MP4s after the first one.
 if ! bashio::config.true 'record_enabled'; then
     bashio::log.info "recorder disabled (record_enabled=false)"
@@ -31,7 +33,7 @@ while true; do
     ffmpeg -hide_banner -v error -nostdin \
         -rtsp_transport tcp -timeout 15000000 -use_wallclock_as_timestamps 1 \
         -i rtsp://127.0.0.1:8554/dfr1154 \
-        -map 0:v -vf "fps=${FPS},format=yuv420p" "${ENC[@]}" \
+        -map 0:v -vf "fps=${FPS},format=nv12" "${ENC[@]}" \
         -f mpegts - \
     | ffmpeg -hide_banner -v error -nostdin -f mpegts -i - \
         -c copy -f segment -segment_time 300 -segment_atclocktime 1 \

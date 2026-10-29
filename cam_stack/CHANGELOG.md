@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.6
+
+* Fix garbled (striped/green) recordings: feed the hardware encoder NV12.
+
 ## 0.1.5
 
 * Fix recorder-cleanup restart loop (non-empty legacy dir `rmdir` under `set -e`).
